@@ -20,7 +20,7 @@ errors, warnings = [], []
 
 ALLOWED_DOMAINS = {
     "fonts.googleapis.com", "fonts.gstatic.com", "unpkg.com", "api.github.com", "github.com",
-    "pump.fun", "solscan.io", "x.com", "twitter.com", "donate.gg", "www.donate.gg",
+    "pump.fun", "solscan.io", "x.com", "twitter.com", "donate.gg", "www.donate.gg", "openssource.fun", "www.openssource.fun",
 }
 SUSPICIOUS = [
     (r"\beval\s*\(", "eval()"),
