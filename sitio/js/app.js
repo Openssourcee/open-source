@@ -561,7 +561,7 @@ function start({ config, plots, changelog }, live) {
         if (!d || typeof d.total_count !== "number") return;
         const pill = $("#prPill");
         pill.href = `${repoUrl}/pulls`;
-        pill.innerHTML = `<i class="ph-bold ph-git-pull-request" aria-hidden="true"></i>${d.total_count} in review`;
+        pill.innerHTML = `<i class="ph-bold ph-git-pull-request" aria-hidden="true"></i>${d.total_count}<span class="pr-label">&nbsp;in review</span>`;
         pill.setAttribute("aria-label", `${d.total_count} pull requests in review on GitHub`);
         pill.hidden = false;
       })

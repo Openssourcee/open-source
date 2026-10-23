@@ -474,8 +474,12 @@ body.blame .foot { position: relative; }
   .swatches { grid-template-columns: repeat(16, 1fr); }
   .zoom { bottom: 118px; }
 }
-@media (max-width: 960px) {
+@media (max-width: 1180px) {
+  /* the centred coordinates would collide with the actions on the right */
   .coords { display: none; }
+}
+@media (max-width: 960px) {
+  .pr-label { display: none; }
   .stage { height: 64svh; min-height: 420px; }
   .hero-card {
     position: relative; left: auto; bottom: auto; width: auto;

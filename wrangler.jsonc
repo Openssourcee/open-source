@@ -11,8 +11,7 @@
     {
       "binding": "DB",
       "database_name": "os-contributions",
-      // replaced by the real id when the database is created on Cloudflare
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      "database_id": "5b7c35d6-0b79-4de0-bfe5-26b6e1f977ba"
     }
   ],
   "observability": { "enabled": true }
