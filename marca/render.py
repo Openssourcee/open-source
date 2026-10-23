@@ -47,6 +47,8 @@ def stills(page):
     pfp.save(OUT / "pfp_1000.png")
     pfp.resize((400, 400), Image.LANCZOS).save(OUT / "pfp_400.png")
     grab(page, "#banner").convert("RGB").save(OUT / "banner_1500x500.png")
+    grab(page, "#post1").convert("RGB").save(OUT / "post_everyone_is_the_dev.png")
+    grab(page, "#post2").convert("RGB").save(OUT / "post_fees_to_open_source.png")
     print("stills ok")
 
 

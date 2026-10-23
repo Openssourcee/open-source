@@ -13,6 +13,8 @@
 <body>
 <canvas id="pfp" width="1000" height="1000"></canvas>
 <canvas id="banner" width="1500" height="500"></canvas>
+<canvas id="post1" width="1600" height="900"></canvas>
+<canvas id="post2" width="1600" height="900"></canvas>
 <script type="module">
 import { C, CAT, grid, logoTiles, drawTiles, plotArt, ants, tag, loadFonts, loadGenesis, drawSprite, SPRITES } from "./art.js";
 
@@ -64,9 +66,110 @@ async function banner() {
   tag(g, 58 * t, 44 * t - 6, "Code", CAT.code, 15);
 }
 
+// ---------- post images (16:9, shown whole in the X timeline) ----------
+function write(g, s, x, y, font, color, align = "left") {
+  g.font = font; g.fillStyle = color; g.textAlign = align; g.textBaseline = "alphabetic"; g.fillText(s, x, y);
+  return g.measureText(s).width;
+}
+function pill(g, x, y, label, size = 30, bg = C.ink, fg = C.ground, font = `600 ${size}px "Familjen Grotesk"`) {
+  g.font = font;
+  const w = g.measureText(label).width + size * 1.2, h = size * 1.9;
+  g.fillStyle = bg; g.beginPath(); g.roundRect(x, y, w, h, h / 2); g.fill();
+  g.fillStyle = fg; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(label, x + w / 2, y + h / 2 + 2);
+  return w;
+}
+function ground(g, W, H) {
+  g.fillStyle = C.ground; g.fillRect(0, 0, W, H);
+  grid(g, W, H, 20);
+}
+function brandLine(g, x, y) {
+  const s = 3;
+  drawTiles(g, logoTiles(C.yellow), x, y - 36 * s + 6, s);
+  write(g, "Open Source", x + 20 * s + 16, y, `700 30px "Familjen Grotesk"`, C.ink);
+  g.font = `700 30px "Familjen Grotesk"`;
+  const w = g.measureText("Open Source").width;
+  write(g, "$OS", x + 20 * s + 26 + w, y, `600 26px "Martian Mono"`, C.ink3);
+}
+
+function post1() {
+  const g = document.getElementById("post1").getContext("2d");
+  const W = 1600, H = 900, M = 96;
+  ground(g, W, H);
+  brandLine(g, M, 150);
+  write(g, "Everyone is", M - 4, 330, `400 170px "Jersey 10"`, C.ink);
+  write(g, "the dev.", M - 4, 480, `400 170px "Jersey 10"`, C.ink);
+  write(g, "The $OS website is a pixel canvas anyone can build.", M, 580, `400 34px "Familjen Grotesk"`, C.ink2);
+  write(g, "Paint a plot, write the lore, ship code.", M, 626, `400 34px "Familjen Grotesk"`, C.ink2);
+  let x = M;
+  for (const s of ["Free", "No account", "No wallet"]) x += pill(g, x, 700, s, 30) + 14;
+  // the board on the right
+  const t = 18, bx = 860, by = 120;
+  const plots = [
+    { kind: "heart", cat: "art", label: "Art", x: 0, y: 2, w: 12, h: 10 },
+    { kind: "code", cat: "code", label: "Code", x: 15, y: 2, w: 19, h: 9 },
+    { kind: "snake", cat: "game", label: "Game", x: 0, y: 16, w: 20, h: 13 },
+    { kind: "sun", cat: "art", label: "Art", x: 23, y: 15, w: 13, h: 11 },
+    { kind: "lore", cat: "words", label: "Lore", x: 23, y: 30, w: 13, h: 7 },
+  ];
+  for (const p of plots) {
+    drawTiles(g, plotArt(p.kind, p.w, p.h), bx + p.x * t, by + p.y * t, t);
+    tag(g, bx + p.x * t, by + p.y * t - 7, p.label, CAT[p.cat], 19);
+  }
+  const op = { x: 0, y: 33, w: 20, h: 4 };
+  ants(g, bx + op.x * t, by + op.y * t, op.w * t, op.h * t, 0, 4, 12);
+  tag(g, bx + op.x * t, by + op.y * t - 7, "open plot", C.ink3, 19);
+  write(g, "your pixels go here", bx + op.w * t / 2, by + (op.y + 2.6) * t, `400 40px "Jersey 10"`, C.ink, "center");
+  drawSprite(g, SPRITES.cursor, bx + 21 * t, by + 35 * t, 4.4, { "#": C.ink, w: C.ground });
+}
+
+function post2() {
+  const g = document.getElementById("post2").getContext("2d");
+  const W = 1600, H = 900, M = 96;
+  ground(g, W, H);
+  brandLine(g, M, 150);
+  write(g, "The fees go", M - 4, 330, `400 170px "Jersey 10"`, C.ink);
+  write(g, "to open source.", M - 4, 480, `400 170px "Jersey 10"`, C.ink);
+  // the flow
+  const rows = [
+    ["coin", "Creator fees", "A cut of every $OS trade."],
+    ["lock", "pump.fun", "Recipients locked. Nobody can change them."],
+    ["heart", "Open-source charities", null],
+  ];
+  const fx = M, fy = 600;
+  rows.forEach(([icon, title, sub], i) => {
+    const x = fx + i * 470, y = fy;
+    if (icon === "coin") drawSprite(g, SPRITES.coin, x, y - 52, 7, { "#": C.ink, y: C.yellow, h: C.pale });
+    if (icon === "lock") drawSprite(g, SPRITES.lock, x + 4, y - 58, 7, { "#": C.ink, y: C.ink3 });
+    if (icon === "heart") drawSprite(g, SPRITES.heartIcon, x + 2, y - 46, 8, { "#": C.ink, p: C.pink });
+    write(g, title, x + 82, y - 14, `700 38px "Familjen Grotesk"`, C.ink);
+    if (sub) {
+      const words = sub.split(" "), lines = [""];
+      g.font = `400 26px "Familjen Grotesk"`;
+      for (const w of words) { const tl = (lines.at(-1) + " " + w).trim(); if (g.measureText(tl).width > 300) lines.push(w); else lines[lines.length - 1] = tl; }
+      lines.forEach((l, k) => write(g, l, x + 82, y + 26 + k * 34, `400 26px "Familjen Grotesk"`, C.ink2));
+    }
+    if (i < rows.length - 1) { g.fillStyle = C.ink; for (let k = 0; k < 4; k++) g.fillRect(x + 410 + k * 14, fy - 30, 8, 6); }
+  });
+  ["Software Freedom Conservancy", "Apache Software Foundation", "Mozilla Foundation"].forEach((s, i) => {
+    const x = fx + 2 * 470 + 82, y = fy + 34 + i * 44;
+    g.fillStyle = [C.blue, C.green2, C.pink][i]; g.fillRect(x, y - 18, 16, 16);
+    write(g, s, x + 28, y, `600 28px "Familjen Grotesk"`, C.ink);
+  });
+  // the key stamp, top right
+  g.save();
+  g.translate(1230, 250); g.rotate(-0.05);
+  g.fillStyle = C.yellow; g.fillRect(-250, -92, 500, 184);
+  write(g, "DEV KEY: PUBLIC.", 0, -12, `400 66px "Jersey 10"`, C.ink, "center");
+  write(g, "CONTROLS NOTHING.", 0, 54, `400 66px "Jersey 10"`, C.ink, "center");
+  g.restore();
+  write(g, "Paid out through Donate.gg. The charities have not endorsed $OS.", M, 850, `400 22px "Familjen Grotesk"`, C.ink3);
+}
+
 await loadFonts();
 pfp();
 await banner();
+post1();
+post2();
 window.done = true;
 </script>
 </body>

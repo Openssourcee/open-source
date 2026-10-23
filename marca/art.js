@@ -205,6 +205,7 @@ export function tag(g, x, y, label, color, size = 15) {
   g.fillRect(x + pad, y - h / 2 - sq / 2, sq, sq);
   g.fillStyle = C.ink;
   g.textBaseline = "middle";
+  g.textAlign = "left";
   g.fillText(label, x + pad + sq + size * 0.4, y - h / 2 + 1);
   g.restore();
   return w;
