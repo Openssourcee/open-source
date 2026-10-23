@@ -1,6 +1,6 @@
 # Open Source ($OS)
 
-The coin whose website is built by everyone.
+The coin whose website is built by everyone. Live at **https://openssource.fun**
 
 This repo **is** the website: a pixel canvas anyone can add to. Paint a plot, write a chapter of
 the lore, or propose code and tech, for free, straight from the page or through GitHub.

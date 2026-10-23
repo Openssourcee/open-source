@@ -14,5 +14,10 @@
       "database_id": "5b7c35d6-0b79-4de0-bfe5-26b6e1f977ba"
     }
   ],
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "openssource.fun", "custom_domain": true },
+    { "pattern": "www.openssource.fun", "custom_domain": true }
+  ],
   "observability": { "enabled": true }
 }
