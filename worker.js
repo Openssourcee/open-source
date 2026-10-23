@@ -13,6 +13,8 @@ const RATE = { perHour: 6 };
 
 export default {
   async fetch(request, env, ctx) {
+    // switched off before launch (wrangler.off.jsonc): every page and the API answer 404
+    if (env.OFFLINE === "1") return new Response("Not found", { status: 404, headers: { "content-type": "text/plain", "cache-control": "no-store" } });
     const url = new URL(request.url);
     const p = url.pathname;
     try {

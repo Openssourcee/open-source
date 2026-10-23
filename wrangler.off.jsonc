@@ -1,0 +1,25 @@
+// Same as wrangler.jsonc, but switched off: every request answers 404.
+{
+  "name": "open-source-os",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./sitio",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "os-contributions",
+      "database_id": "5b7c35d6-0b79-4de0-bfe5-26b6e1f977ba"
+    }
+  ],
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "openssource.fun", "custom_domain": true },
+    { "pattern": "www.openssource.fun", "custom_domain": true }
+  ],
+  "vars": { "OFFLINE": "1" },
+  "observability": { "enabled": true }
+}
