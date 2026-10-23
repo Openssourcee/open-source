@@ -1,0 +1,10 @@
+.dev.vars
+.wrangler/
+node_modules/
+.impeccable/
+.claude/
+
+# personal notes and helpers, kept on the maintainer's computer
+*.bat
+LANZAMIENTO.md
+X/

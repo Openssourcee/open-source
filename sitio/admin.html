@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Review queue - Open Source ($OS)</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=Martian+Mono:wght@400;600&family=Jersey+10&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: var(--ground-2); }
+    .admin { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; display: grid; gap: 20px; }
+    .admin h1 { font-family: var(--display); font-weight: 400; font-size: 3.25rem; line-height: 0.9; }
+    .keyrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+    .keyrow .field { flex: 1 1 260px; }
+    .item { background: var(--panel); border-radius: var(--r-panel); padding: 18px; display: grid; gap: 10px; }
+    .item-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+    .item-head code { font-family: var(--mono); font-size: 0.75rem; background: var(--ground-2); padding: 2px 8px; border-radius: 6px; }
+    .item-head span { color: var(--ink-3); font-size: 0.875rem; }
+    .item h2 { font-family: var(--sans); font-size: 1.125rem; font-weight: 700; }
+    .item pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 400 0.8125rem/1.55 var(--mono); background: var(--ground-2); padding: 12px; border-radius: 10px; max-height: 420px; overflow: auto; }
+    .item .text { white-space: pre-wrap; }
+    .item canvas { image-rendering: pixelated; border: 2px dashed var(--ink); background: #fff; max-width: 100%; height: auto; justify-self: start; }
+    .item-actions { display: flex; gap: 8px; }
+    .warn { color: var(--ink-2); font-size: 0.875rem; }
+    .empty { color: var(--ink-2); }
+  </style>
+</head>
+<body>
+  <main class="admin">
+    <h1>Review queue</h1>
+    <p class="warn">Each visitor's first painting, chapter or idea goes live on its own; check "Live now" and take down anything you do not want. Code is never run from here: approving it only lists it as an accepted proposal. Copy it into the repo yourself after reading it.</p>
+    <form class="keyrow" id="keyForm">
+      <div class="field">
+        <label for="key">Review key</label>
+        <input id="key" type="password" autocomplete="current-password">
+      </div>
+      <button class="btn primary" type="submit">Load queue</button>
+    </form>
+    <p class="form-error" id="err" role="alert" hidden></p>
+    <div class="filters" role="group" aria-label="View">
+      <button class="chip" type="button" id="tabPending" aria-pressed="true">Waiting</button>
+      <button class="chip" type="button" id="tabLive" aria-pressed="false">Live now</button>
+    </div>
+    <div id="queue"></div>
+  </main>
+  <script type="module">
+    const $ = (s) => document.querySelector(s);
+    const PIXEL_CHARS = ".0123456789abcdefghijklmnopqrstuv";
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+    let palette = [];
+    const keyInput = $("#key");
+    try { keyInput.value = sessionStorage.getItem("os.reviewKey") || ""; } catch {}
+
+    async function api(path, opts = {}) {
+      const r = await fetch(path, { ...opts, headers: { ...(opts.headers || {}), Authorization: `Bearer ${keyInput.value}`, "content-type": "application/json" } });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || `Error ${r.status}`);
+      return d;
+    }
+
+    function paintCanvas(it) {
+      const k = Math.max(3, Math.floor(Math.min(420 / it.w, 300 / it.h)));
+      const c = document.createElement("canvas");
+      c.width = it.w * k; c.height = it.h * k;
+      const x = c.getContext("2d");
+      [...it.pixels].forEach((ch, i) => {
+        const n = PIXEL_CHARS.indexOf(ch) - 1;
+        if (n < 0) return;
+        x.fillStyle = palette[n];
+        x.fillRect((i % it.w) * k, Math.floor(i / it.w) * k, k, k);
+      });
+      return c;
+    }
+
+    let view = "pending";
+    $("#tabPending").addEventListener("click", () => { view = "pending"; tabs(); load(); });
+    $("#tabLive").addEventListener("click", () => { view = "live"; tabs(); load(); });
+    function tabs() { $("#tabPending").setAttribute("aria-pressed", String(view === "pending")); $("#tabLive").setAttribute("aria-pressed", String(view === "live")); }
+
+    async function load() {
+      $("#err").hidden = true;
+      try {
+        if (!palette.length) palette = (await fetch("data/config.json").then((r) => r.json())).palette;
+        const { items } = await api(view === "pending" ? "/api/admin/pending" : "/api/admin/live");
+        try { sessionStorage.setItem("os.reviewKey", keyInput.value); } catch {}
+        const q = $("#queue");
+        const none = view === "pending" ? "Nothing waiting. Nice." : "Nothing live yet.";
+        q.innerHTML = items.length ? "" : `<p class="empty">${none}</p>`;
+        for (const it of items) {
+          const el = document.createElement("article");
+          el.className = "item";
+          const where = it.kind === "paint" ? `${it.plot_id ? `plot ${esc(it.plot_id)}` : "own plot"} at (${it.x}, ${it.y}), ${it.w}x${it.h}` : it.plot_id ? `about plot ${esc(it.plot_id)}` : "";
+          el.innerHTML = `
+            <div class="item-head"><code>${esc(it.kind)}</code>${it.auto ? "<code>first, went live on its own</code>" : ""}<b>@${esc(it.handle)}</b><span>${new Date(it.created_at).toLocaleString("en-GB")}</span><span>${where}</span></div>
+            ${it.title ? `<h2>${esc(it.title)}</h2>` : ""}
+            ${it.kind === "code" ? `<pre><code>${esc(it.body)}</code></pre>` : it.body ? `<p class="text">${esc(it.body)}</p>` : ""}
+            ${it.link ? `<p>Link (check it before opening): <code>${esc(it.link)}</code></p>` : ""}
+            <div class="item-actions">${view === "pending"
+              ? `<button class="btn primary" type="button" data-a="approve">Approve</button><button class="btn quiet" type="button" data-a="reject">Reject</button>`
+              : `<button class="btn quiet" type="button" data-a="remove">Take it down</button>`}</div>`;
+          if (it.kind === "paint") el.querySelector(".item-head").after(paintCanvas(it));
+          el.querySelectorAll("[data-a]").forEach((b) => b.addEventListener("click", async () => {
+            b.disabled = true;
+            try {
+              await api("/api/admin/review", { method: "POST", body: JSON.stringify({ id: it.id, action: b.dataset.a }) });
+              el.remove();
+              if (!$("#queue").children.length) $("#queue").innerHTML = `<p class="empty">${view === "pending" ? "Nothing waiting. Nice." : "Nothing live yet."}</p>`;
+            } catch (e) { $("#err").textContent = e.message; $("#err").hidden = false; b.disabled = false; }
+          }));
+          q.append(el);
+        }
+      } catch (e) {
+        $("#err").textContent = e.message; $("#err").hidden = false;
+      }
+    }
+    $("#keyForm").addEventListener("submit", (e) => { e.preventDefault(); load(); });
+    if (keyInput.value) load();
+  </script>
+</body>
+</html>

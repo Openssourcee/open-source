@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>$OS profile picture and banner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=Martian+Mono:wght@400;600&family=Jersey+10&display=block">
+<style>
+  body { margin: 0; padding: 24px; background: #2b2b2b; display: grid; gap: 24px; justify-items: start; font: 14px system-ui; color: #ddd; }
+  canvas { display: block; max-width: 100%; height: auto; }
+  #pfp { width: 400px; border-radius: 50%; }
+</style>
+</head>
+<body>
+<canvas id="pfp" width="1000" height="1000"></canvas>
+<canvas id="banner" width="1500" height="500"></canvas>
+<script type="module">
+import { C, CAT, grid, logoTiles, drawTiles, plotArt, ants, tag, loadFonts, loadGenesis, drawSprite, SPRITES } from "./art.js";
+
+function pfp() {
+  const g = document.getElementById("pfp").getContext("2d");
+  const S = 1000;
+  g.fillStyle = C.yellow; g.fillRect(0, 0, S, S);
+  grid(g, S, S, 25, "rgba(0,0,0,0.07)");
+  const s = 22, w = 20 * s, h = 36 * s;
+  const ox = Math.round((S - w) / 2 / s) * s, oy = Math.round((S - h) / 2 / s) * s + 4;
+  // a hard pixel shadow so the logo sits on the canvas like a sticker
+  drawTiles(g, logoTiles(C.ink).map(([x, y]) => [x, y, "rgba(0,0,0,0.16)"]), ox + s, oy + s, s);
+  drawTiles(g, logoTiles(C.ground), ox, oy, s);
+}
+
+async function banner() {
+  const g = document.getElementById("banner").getContext("2d");
+  const W = 1500, H = 500, t = 8;
+  g.fillStyle = C.ground; g.fillRect(0, 0, W, H);
+  grid(g, W, H, t);
+  const gen = await loadGenesis("../sitio/plots/genesis.png");
+  const gx = 79, gy = 7;
+  drawTiles(g, gen.tiles, gx * t, gy * t, t);
+  tag(g, gx * t, gy * t - 6, "genesis", C.ink, 15);
+
+  // community plots on the left, kept clear of the bottom-left corner where X puts the avatar
+  const plots = [
+    { kind: "heart", cat: "art", label: "Art", x: 4, y: 6, w: 15, h: 12 },
+    { kind: "code", cat: "code", label: "Code", x: 23, y: 6, w: 20, h: 10 },
+    { kind: "snake", cat: "game", label: "Game", x: 47, y: 5, w: 27, h: 15 },
+    { kind: "sun", cat: "art", label: "Art", x: 5, y: 25, w: 17, h: 14 },
+    { kind: "lore", cat: "words", label: "Lore", x: 26, y: 24, w: 22, h: 13 },
+  ];
+  for (const p of plots) {
+    drawTiles(g, plotArt(p.kind, p.w, p.h), p.x * t, p.y * t, t);
+    tag(g, p.x * t, p.y * t - 6, p.label, CAT[p.cat], 15);
+  }
+  // one plot half painted, with the cursor still at work
+  const wip = { x: 52, y: 25, w: 22, h: 14 };
+  const art = plotArt("heart", wip.w, wip.h).filter(([x, y]) => y < 7 || (y === 7 && x < 13));
+  drawTiles(g, art, wip.x * t, wip.y * t, t);
+  ants(g, wip.x * t, wip.y * t, wip.w * t, wip.h * t, 0, 3, 9);
+  tag(g, wip.x * t, wip.y * t - 6, "Art", CAT.art, 15);
+  drawSprite(g, SPRITES.cursor, (wip.x + 13) * t + 2, (wip.y + 7) * t + 2, 3.4, { "#": C.ink, w: C.ground });
+  // open plots waiting
+  ants(g, 36 * t, 44 * t, 18 * t, 11 * t, 0, 3, 9);
+  tag(g, 36 * t, 44 * t - 6, "open plot", C.ink3, 15);
+  ants(g, 58 * t, 44 * t, 16 * t, 11 * t, 6, 3, 9);
+  tag(g, 58 * t, 44 * t - 6, "Code", CAT.code, 15);
+}
+
+await loadFonts();
+pfp();
+await banner();
+window.done = true;
+</script>
+</body>
+</html>

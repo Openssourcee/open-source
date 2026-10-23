@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>$OS explainer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600;700&family=Martian+Mono:wght@400;600&family=Jersey+10&display=block">
+<style>
+  html, body { margin: 0; background: #2b2b2b; }
+  canvas { display: block; width: min(100vw, 100vh); height: auto; margin: 0 auto; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1080"></canvas>
+<script type="module">
+import { C, CAT, P, eo, eio, back, clamp, rng, grid, logoTiles, drawTiles, drawSprite, SPRITES, plotArt, paintOrder, ants, tag, loadFonts, loadGenesis } from "./art.js";
+
+const W = 1080, H = 1080, M = 80;
+const g = document.getElementById("c").getContext("2d");
+g.imageSmoothingEnabled = false;
+
+// ---------- timeline (seconds) ----------
+const T = {
+  claim: 0, drain: 5.2, notOS: 10.6, thisIs: 13.0, board: 16.6, code: 24.2, fees: 29.6, key: 35.6, end: 41.6,
+};
+const DURATION = 46.5;
+const SFX = [];
+const MUTES = [[T.notOS, T.thisIs]];
+const FADE_FROM = 44.2;
+const END_CHORD = T.end + 0.4;
+
+// ---------- type ----------
+const F = {
+  display: (px) => `400 ${px}px "Jersey 10"`,
+  sans: (px, w = 400) => `${w} ${px}px "Familjen Grotesk"`,
+  mono: (px, w = 400) => `${w} ${px}px "Martian Mono"`,
+};
+
+function text(s, x, y, font, color, { align = "left", alpha = 1, dy = 0, base = "alphabetic", spacing = "0px" } = {}) {
+  if (alpha <= 0) return 0;
+  g.save();
+  g.globalAlpha *= alpha;
+  g.font = font;
+  g.fillStyle = color;
+  g.textAlign = align;
+  g.textBaseline = base;
+  g.letterSpacing = spacing;
+  g.fillText(s, x, y + dy);
+  const w = g.measureText(s).width;
+  g.restore();
+  return w;
+}
+
+// a line that rises 26px into place while fading in
+function rise(t, at, dur = 0.5) {
+  const k = eo(P(t, at, dur));
+  return { alpha: k, dy: (1 - k) * 26 };
+}
+
+function lines(t, at, arr, x, y, size, color = C.ink, step = 0.09, lh = 0.9, font = F.display, align = "left") {
+  arr.forEach((s, i) => text(s, x, y + i * size * lh, font(size), color, { align, ...rise(t, at + i * step) }));
+}
+
+function pill(x, y, label, { bg = C.ink, fg = C.ground, size = 30, alpha = 1, scale = 1, font = F.sans(30, 600) } = {}) {
+  if (alpha <= 0) return 0;
+  g.save();
+  g.font = font;
+  const w = g.measureText(label).width + size * 1.2, h = size * 1.9;
+  g.globalAlpha *= alpha;
+  g.translate(x + w / 2, y + h / 2);
+  g.scale(scale, scale);
+  g.fillStyle = bg;
+  g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, h / 2); g.fill();
+  g.fillStyle = fg; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText(label, 0, 2);
+  g.restore();
+  return w;
+}
+
+function popIn(t, at, dur = 0.42) {
+  const k = P(t, at, dur);
+  return { alpha: eo(clamp(k * 2)), scale: 0.92 + 0.08 * back(k) };
+}
+
+// ---------- the fake key (not a real key; it only looks like one) ----------
+const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const FAKE = (() => { const r = rng(2026); return Array.from({ length: 88 }, () => B58[Math.floor(r() * 58)]).join(""); })();
+const SHOWN = FAKE.slice(0, 34) + "…";
+
+function keyChip(t, at, y, resolveFrom, resolveDur, label = "PRIVATE KEY") {
+  const a = rise(t, at, 0.45);
+  if (a.alpha <= 0) return;
+  g.save();
+  g.globalAlpha *= a.alpha;
+  g.translate(0, a.dy);
+  g.fillStyle = C.ink;
+  g.beginPath(); g.roundRect(M, y, W - 2 * M, 112, 20); g.fill();
+  text(label, M + 32, y + 40, F.mono(20, 600), C.yellow, { spacing: "2px" });
+  const p = P(t, resolveFrom, resolveDur);
+  const done = Math.floor(p * SHOWN.length);
+  const r = rng(Math.floor(t * 24) + 11);
+  const s = [...SHOWN].map((ch, i) => (i < done || ch === "…" ? ch : B58[Math.floor(r() * 58)])).join("");
+  text(s, M + 32, y + 86, F.mono(27), C.ground);
+  g.restore();
+}
+
+// ---------- scenes ----------
+function sceneClaim(t) {
+  const k = t - T.claim;
+  text("ANOTHER COIN SAID:", M, 250, F.mono(26, 600), C.ink3, { spacing: "2px", ...rise(k, 0.25) });
+  lines(k, 0.5, ["“The first", "open-source", "coin.”"], M - 6, 400, 168);
+  lines(k, 2.2, ["Its big move? Posting the dev", "wallet's private key for everyone."], M, 780, 42, C.ink2, 0.08, 1.25, (s) => F.sans(s));
+  keyChip(k, 2.9, 880, 3.1, 1.3);
+}
+
+const BOTS = Array.from({ length: 10 }, (_, i) => ({ at: T.drain + 1.0 + i * 0.2, y: 380 + ((i * 137) % 560) }));
+function sceneDrain(t) {
+  const k = t - T.drain;
+  lines(k, 0.15, ["Bots drain a public", "key in seconds."], M - 4, 190, 132);
+  // the wallet
+  const wx = M, wy = 380, ww = 560, wh = 400;
+  const grabbed = BOTS.filter((b) => t >= b.at + 0.42).length;
+  const empty = grabbed >= 10;
+  const wa = rise(k, 0.5);
+  g.save();
+  g.globalAlpha *= wa.alpha;
+  g.translate(0, wa.dy);
+  g.fillStyle = C.ground2;
+  g.beginPath(); g.roundRect(wx, wy, ww, wh, 24); g.fill();
+  text("DEV WALLET", wx + 36, wy + 62, F.mono(22, 600), C.ink3, { spacing: "2px" });
+  const bal = (12.4 * (10 - grabbed) / 10).toFixed(2);
+  text(`${bal} SOL`, wx + 36, wy + 150, F.mono(64, 600), empty ? C.red : C.ink);
+  for (let i = 0; i < 10; i++) {
+    if (i < grabbed) continue;
+    const cx = wx + 40 + (i % 5) * 96, cy = wy + 210 + Math.floor(i / 5) * 84;
+    drawSprite(g, SPRITES.coin, cx, cy, 8, { "#": C.ink, y: C.yellow, h: C.pale });
+  }
+  g.restore();
+  // the bots: fly in, take one coin each, fly off
+  BOTS.forEach((b, i) => {
+    const coinX = wx + 40 + (i % 5) * 96, coinY = wy + 210 + Math.floor(i / 5) * 84;
+    const inK = eo(P(t, b.at, 0.42));
+    const outK = eio(P(t, b.at + 0.5, 0.55));
+    if (t < b.at || outK >= 1) return;
+    const sx = W + 60, sy = b.y;
+    let x = sx + (coinX - 10 - sx) * inK, y = sy + (coinY - 70 - sy) * inK;
+    x += (W + 120 - x) * outK; y += (-160 - y) * outK;
+    drawSprite(g, SPRITES.bot, x, y, 7, { "#": C.ink, b: C.lilac, w: C.ground, k: C.ink, r: C.red });
+    if (t >= b.at + 0.42) drawSprite(g, SPRITES.coin, x + 10, y + 74, 8, { "#": C.ink, y: C.yellow, h: C.pale });
+  });
+  text("Nobody builds anything.", M, 900, F.sans(52, 700), C.ink, rise(k, 3.75));
+}
+
+function sceneNotOS(t) {
+  const k = t - T.notOS;
+  const a = rise(k, 0.05, 0.35);
+  g.save();
+  g.font = F.display(196);
+  const w1 = g.measureText("That's ").width, w2 = g.measureText("not").width;
+  g.restore();
+  const y1 = 500, y2 = 670;
+  // a highlighter swipe behind "not"
+  const hl = eo(P(k, 0.55, 0.3));
+  if (hl > 0) { g.fillStyle = C.yellow; g.fillRect(M + w1 - 10, y1 - 132, (w2 + 20) * hl, 146); }
+  text("That's ", M, y1, F.display(196), C.ink, a);
+  text("not", M + w1, y1, F.display(196), C.ink, a);
+  text("open source.", M, y2, F.display(196), C.ink, rise(k, 0.15, 0.35));
+}
+
+let GEN = null, GEN_ORDER = null;
+function sceneThisIs(t) {
+  const k = t - T.thisIs;
+  lines(k, 0.1, ["This is."], M - 4, 230, 150);
+  const s = 9, gw = GEN.w * s, gh = GEN.h * s;
+  const gx = Math.round((W - gw) / 2), gy = 330;
+  const p = P(k, 0.55, 1.15);
+  drawTiles(g, GEN_ORDER, gx, gy, s, Math.floor(eio(p) * GEN_ORDER.length));
+  if (p <= 0) ants(g, gx, gy, gw, gh, k * 40, 4, 14);
+  const r = rise(k, 2.0);
+  const pw = pill(M, 840 + r.dy, "$OS", { bg: C.yellow, fg: C.ink, size: 34, alpha: r.alpha, font: F.mono(34, 600) });
+  text("the coin whose website", M + pw + 24, 875, F.sans(40, 600), C.ink, r);
+  text("is built by everyone.", M + pw + 24, 925, F.sans(40, 600), C.ink, r);
+}
+
+const TILE = 16, BX = M, BY = 330;
+const PLOTS = [
+  { kind: "heart", cat: "art", label: "Art", x: 1, y: 2, w: 13, h: 10 },
+  { kind: "code", cat: "code", label: "Code", x: 17, y: 2, w: 17, h: 9 },
+  { kind: "snake", cat: "game", label: "Game", x: 37, y: 2, w: 20, h: 13 },
+  { kind: "lore", cat: "words", label: "Lore", x: 1, y: 16, w: 22, h: 13 },
+  { kind: "sun", cat: "art", label: "Art", x: 26, y: 18, w: 13, h: 11 },
+].map((p, i) => ({ ...p, at: T.board + 1.0 + i * 0.72, tiles: paintOrder(plotArt(p.kind, p.w, p.h), 40 + i) }));
+const OPEN = { x: 42, y: 18, w: 15, h: 11 };
+
+function sceneBoard(t) {
+  const k = t - T.board;
+  lines(k, 0.1, ["The website", "is the code."], M - 4, 160, 132);
+  const ba = eo(P(k, 0.35, 0.5));
+  g.save();
+  g.globalAlpha *= ba;
+  for (const p of [...PLOTS, { ...OPEN, cat: "open", label: "open plot", at: 99 }]) {
+    const x = BX + p.x * TILE, y = BY + p.y * TILE, w = p.w * TILE, h = p.h * TILE;
+    const painted = p.tiles ? Math.floor(eio(P(t, p.at + 0.35, 0.55)) * p.tiles.length) : 0;
+    if (painted < (p.tiles?.length ?? 1)) ants(g, x, y, w, h, t * 30, 3, 10);
+    if (painted) drawTiles(g, p.tiles, x, y, TILE, painted);
+    tag(g, x, y - 6, p.label, p.cat === "open" ? C.ink3 : CAT[p.cat], 18);
+  }
+  // the open plot keeps waiting
+  const last = PLOTS[PLOTS.length - 1].at + 1.0;
+  const glow = P(t, last + 0.2, 0.4);
+  if (glow > 0) {
+    const x = BX + OPEN.x * TILE, y = BY + OPEN.y * TILE;
+    text("your pixels", x + OPEN.w * TILE / 2, y + 78, F.display(46), C.ink, { align: "center", alpha: eo(glow) });
+    text("go here", x + OPEN.w * TILE / 2, y + 120, F.display(46), C.ink, { align: "center", alpha: eo(glow) });
+  }
+  g.restore();
+  // a cursor visits each plot before it gets painted
+  if (k > 0.6) {
+    let cx = W + 40, cy = 900;
+    for (const p of PLOTS) {
+      const tx = BX + (p.x + p.w * 0.55) * TILE, ty = BY + (p.y + p.h * 0.55) * TILE;
+      const m = eio(P(t, p.at - 0.25, 0.5));
+      cx += (tx - cx) * m; cy += (ty - cy) * m;
+    }
+    const lastP = PLOTS[PLOTS.length - 1];
+    const away = eio(P(t, lastP.at + 1.0, 0.6));
+    cx += (W + 60 - cx) * away; cy += (1000 - cy) * away;
+    drawSprite(g, SPRITES.cursor, cx, cy, 4, { "#": C.ink, w: C.ground });
+  }
+  lines(k, 5.0, ["Anyone can paint a plot, write the", "lore or ship a feature."], M, 870, 40, C.ink2, 0.08, 1.25, (s) => F.sans(s));
+  let x = M;
+  ["Free", "No account", "No wallet"].forEach((s, i) => {
+    const pi = popIn(k, 5.7 + i * 0.22);
+    x += pill(x, 960, s, { ...pi, size: 28 }) + 14;
+  });
+}
+
+const CODE = [
+  ["// open-source-os / worker.js", C.ink3],
+  ["// MIT licence. Read it, fork it, change it.", C.ink3],
+  ["", C.ink],
+  ["async function contribute(req, env) {", C.ground],
+  ["  const first = await isFirstVisit(req);", C.ground],
+  ["  // your first piece goes live at once", C.ink3],
+  ["  const live = first && kind !== \"code\";", C.ground],
+  ["  return save(req, live);", C.ground],
+  ["}", C.ground],
+];
+const CODE_CHARS = CODE.reduce((n, [s]) => n + s.length, 0);
+function sceneCode(t) {
+  const k = t - T.code;
+  lines(k, 0.1, ["Every line", "is public."], M - 4, 190, 132);
+  const wa = rise(k, 0.45);
+  const x = M, y = 360, w = W - 2 * M, h = 430;
+  g.save();
+  g.globalAlpha *= wa.alpha;
+  g.translate(0, wa.dy);
+  g.fillStyle = C.ink;
+  g.beginPath(); g.roundRect(x, y, w, h, 22); g.fill();
+  g.fillStyle = "#1c1c1c";
+  g.beginPath(); g.roundRect(x, y, w, 64, [22, 22, 0, 0]); g.fill();
+  text("worker.js", x + 32, y + 42, F.mono(22, 600), C.ground);
+  text("github", x + w - 32, y + 42, F.mono(22), C.ink3, { align: "right" });
+  let budget = Math.floor(eio(P(k, 0.8, 2.6)) * CODE_CHARS);
+  CODE.forEach(([s, col], i) => {
+    const n = Math.min(s.length, budget);
+    budget -= n;
+    text(s.slice(0, n), x + 32, y + 116 + i * 36, F.mono(22), col);
+  });
+  const caret = Math.floor(k * 2.5) % 2 === 0 && k < 4.2;
+  if (caret) { g.fillStyle = C.yellow; g.fillRect(x + 32, y + 120 + 8 * 36 + 8, 14, 4); }
+  g.restore();
+  // the MIT stamp
+  const st = P(k, 3.6, 0.32);
+  if (st > 0) {
+    g.save();
+    g.translate(x + w - 170, y + h - 36);
+    g.rotate(-0.07);
+    const sc = 1.25 - 0.25 * eo(st);
+    g.scale(sc, sc);
+    g.globalAlpha *= eo(clamp(st * 2));
+    g.fillStyle = C.yellow;
+    g.fillRect(-150, -58, 300, 116);
+    g.strokeStyle = C.ink; g.lineWidth = 6; g.strokeRect(-150, -58, 300, 116);
+    text("MIT", 0, 30, F.display(100), C.ink, { align: "center" });
+    g.restore();
+  }
+  lines(k, 3.0, ["Fork it. Change it. Send a pull request."], M, 880, 40, C.ink2, 0.08, 1.25, (s) => F.sans(s));
+  text("Code is always read by a person before it goes in.", M, 950, F.sans(30), C.ink3, rise(k, 3.4));
+}
+
+function flowRow(t, at, y, icon, title, sub) {
+  const a = rise(t, at);
+  if (a.alpha <= 0) return;
+  g.save();
+  g.globalAlpha *= a.alpha;
+  g.translate(0, a.dy);
+  if (icon === "coin") drawSprite(g, SPRITES.coin, M, y - 52, 8, { "#": C.ink, y: C.yellow, h: C.pale });
+  if (icon === "lock") drawSprite(g, SPRITES.lock, M + 4, y - 60, 8, { "#": C.ink, y: C.ink3 });
+  if (icon === "heart") drawSprite(g, SPRITES.heartIcon, M + 4, y - 48, 9, { "#": C.ink, p: C.pink });
+  text(title, M + 100, y - 14, F.sans(46, 700), C.ink);
+  if (sub) text(sub, M + 100, y + 30, F.sans(32), C.ink2);
+  g.restore();
+}
+function arrow(t, at, y) {
+  const k = eo(P(t, at, 0.3));
+  if (k <= 0) return;
+  g.fillStyle = C.ink;
+  for (let i = 0; i < 4; i++) if (i / 4 < k) g.fillRect(M + 30, y + i * 14, 6, 8);
+}
+function sceneFees(t) {
+  const k = t - T.fees;
+  lines(k, 0.1, ["The fees go to", "open source."], M - 4, 190, 132);
+  flowRow(k, 0.6, 420, "coin", "Creator fees", "A cut of every $OS trade.");
+  arrow(k, 1.0, 470);
+  flowRow(k, 1.2, 580, "lock", "pump.fun", "Recipients locked after launch. Nobody can change them.");
+  arrow(k, 1.6, 630);
+  flowRow(k, 1.8, 740, "heart", "Open-source charities", null);
+  ["Software Freedom Conservancy", "Apache Software Foundation", "Mozilla Foundation"].forEach((s, i) => {
+    const a = rise(k, 2.1 + i * 0.16);
+    g.save(); g.globalAlpha *= a.alpha;
+    g.fillStyle = [C.blue, C.green2, C.pink][i];
+    g.fillRect(M + 100, 776 + i * 52 + a.dy, 18, 18);
+    g.restore();
+    text(s, M + 134, 794 + i * 52, F.sans(34, 600), C.ink, a);
+  });
+  text("Paid out through Donate.gg. The charities have not endorsed $OS.", M, 1010, F.sans(24), C.ink3, rise(k, 3.0));
+}
+
+const CHECKS = ["Holds 0 $OS", "Holds 0 SOL", "Fees locked to charity", "No new $OS can ever be minted"];
+function sceneKey(t) {
+  const k = t - T.key;
+  lines(k, 0.1, ["And yes, here's", "our dev key."], M - 4, 190, 132);
+  keyChip(k, 0.6, 362, 0.8, 0.9);
+  CHECKS.forEach((s, i) => {
+    const at = 2.0 + i * 0.4;
+    const a = rise(k, at);
+    if (a.alpha <= 0) return;
+    const y = 560 + i * 74;
+    g.save(); g.globalAlpha *= a.alpha; g.translate(0, a.dy);
+    const on = k >= at + 0.2;
+    g.fillStyle = on ? C.green : C.ground; g.strokeStyle = C.ink; g.lineWidth = 4;
+    g.fillRect(M, y - 38, 48, 48); g.strokeRect(M + 2, y - 36, 44, 44);
+    if (on) drawSprite(g, SPRITES.tick, M + 10, y - 26, 4, { "#": C.ground });
+    g.restore();
+    text(s, M + 76, y, F.sans(42, 600), C.ink, a);
+  });
+  const st = P(k, 4.0, 0.32);
+  if (st > 0) {
+    g.save();
+    g.translate(M + 430, 900);
+    g.rotate(-0.035);
+    const sc = 1.2 - 0.2 * eo(st);
+    g.scale(sc, sc);
+    g.globalAlpha *= eo(clamp(st * 2));
+    g.fillStyle = C.yellow; g.fillRect(-430, -64, 860, 128);
+    text("IT CONTROLS NOTHING.", 0, 36, F.display(104), C.ink, { align: "center" });
+    g.restore();
+  }
+  text("So please don't send anything to it.", M, 1020, F.sans(28), C.ink3, rise(k, 4.6));
+}
+
+const LOGO = logoTiles(C.ground);
+function sceneEnd(t) {
+  const k = t - T.end;
+  const wipe = eio(P(k, 0, 0.55));
+  g.fillStyle = C.yellow;
+  g.fillRect(0, H * (1 - wipe), W, H * wipe);
+  if (wipe >= 1) grid(g, W, H, 24, "rgba(0,0,0,0.06)");
+  const pk = P(k, 0.4, 0.5);
+  if (pk > 0) {
+    const s = 10, lw = 20 * s, lh = 36 * s;
+    g.save();
+    g.translate(W / 2, 110 + lh / 2);
+    const sc = 0.9 + 0.1 * back(pk);
+    g.scale(sc, sc);
+    g.globalAlpha *= eo(clamp(pk * 2));
+    drawTiles(g, LOGO.map(([x, y]) => [x, y, "rgba(0,0,0,0.16)"]), -lw / 2 + s, -lh / 2 + s, s);
+    drawTiles(g, LOGO, -lw / 2, -lh / 2, s);
+    g.restore();
+  }
+  lines(k, 0.9, ["Everyone is", "the dev."], W / 2, 620, 150, C.ink, 0.1, 0.88, F.display, "center");
+  text("For real this time.", W / 2, 840, F.sans(48, 700), C.ink, { align: "center", ...rise(k, 1.6) });
+  text("$OS · OPEN SOURCE · BUILT BY EVERYONE", W / 2, 990, F.mono(24, 600), C.ink, { align: "center", spacing: "1px", ...rise(k, 2.1) });
+}
+
+const SCENES = [
+  [T.claim, T.drain, sceneClaim],
+  [T.drain, T.notOS, sceneDrain],
+  [T.notOS, T.thisIs, sceneNotOS],
+  [T.thisIs, T.board, sceneThisIs],
+  [T.board, T.code, sceneBoard],
+  [T.code, T.fees, sceneCode],
+  [T.fees, T.key, sceneFees],
+  [T.key, T.end, sceneKey],
+  [T.end, DURATION + 1, sceneEnd],
+];
+
+function renderAt(t) {
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.globalAlpha = 1;
+  g.fillStyle = C.ground;
+  g.fillRect(0, 0, W, H);
+  grid(g, W, H, 24, C.grid, t * 10);
+  for (const [a, b, fn] of SCENES) {
+    if (t < a || t >= b) continue;
+    const out = b <= DURATION ? P(t, b - 0.32, 0.32) : 0;
+    g.save();
+    g.globalAlpha = 1 - eo(out);
+    g.translate(0, -18 * eo(out));
+    fn(t);
+    g.restore();
+  }
+}
+
+// ---------- sound cues (rendered to audio by render.py) ----------
+function cue(at, name) { SFX.push([Math.round(at * 1000) / 1000, name]); }
+for (let i = 0; i < 13; i++) cue(T.claim + 3.1 + i * 0.1, "type");
+BOTS.forEach((b) => cue(b.at + 0.42, "zap"));
+cue(BOTS[9].at + 0.45, "down");
+cue(T.notOS + 0.05, "thud");
+cue(T.notOS + 0.55, "swipe");
+cue(T.thisIs + 0.55, "whoosh");
+for (let i = 0; i < 6; i++) cue(T.thisIs + 0.6 + i * 0.18, "pop");
+cue(T.thisIs + 2.0, "pop");
+PLOTS.forEach((p) => { cue(p.at + 0.38, "pop"); cue(p.at + 0.62, "pop"); });
+for (let i = 0; i < 3; i++) cue(T.board + 5.7 + i * 0.22, "pop");
+for (let i = 0; i < 18; i++) cue(T.code + 0.8 + i * 0.14, "type");
+cue(T.code + 3.6, "thud");
+[0.6, 1.2, 1.8].forEach((d) => cue(T.fees + d, "pop"));
+[2.1, 2.26, 2.42].forEach((d) => cue(T.fees + d, "type"));
+for (let i = 0; i < 9; i++) cue(T.key + 0.8 + i * 0.1, "type");
+CHECKS.forEach((_, i) => cue(T.key + 2.2 + i * 0.4, "check"));
+cue(T.key + 4.0, "thud");
+cue(T.end, "whoosh");
+cue(T.end + 0.4, "chime");
+
+Object.assign(window, { renderAt, DURATION, SFX, MUTES, FADE_FROM, END_CHORD });
+
+await loadFonts();
+GEN = await loadGenesis("../sitio/plots/genesis.png");
+GEN_ORDER = paintOrder(GEN.tiles, 3);
+window.ready = true;
+
+if (location.hash !== "#render") {
+  const start = performance.now() - (parseFloat(new URLSearchParams(location.search).get("t")) || 0) * 1000;
+  const loop = () => { renderAt(((performance.now() - start) / 1000) % DURATION); requestAnimationFrame(loop); };
+  loop();
+} else {
+  renderAt(0);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+[
+  {"id": "genesis", "status": "built", "title": "Genesis", "brief": "The logo and the first plot. Painted before anyone else showed up.", "category": "art", "x": 92, "y": 10, "w": 104, "h": 46, "art": "plots/genesis.png", "author": "genesis", "avatar": "favicon.png", "version": "v0.1", "pr": null},
+  {"id": "theme-switch", "status": "open", "title": "Light and dark switch", "brief": "The page follows the system theme. Add a switch that overrides it and remembers the choice.", "category": "code", "x": 8, "y": 8, "w": 30, "h": 16},
+  {"id": "mascot", "status": "open", "title": "A pixel mascot", "brief": "Draw the $OS mascot right here. Palette colours only, one pixel per tile.", "category": "art", "x": 46, "y": 8, "w": 38, "h": 28},
+  {"id": "fork-rush", "status": "open", "title": "Mini-game for the site", "brief": "A small browser game that runs on this page. Any idea, as long as it is fun in 30 seconds.", "category": "game", "x": 96, "y": 60, "w": 46, "h": 30},
+  {"id": "merge-feed", "status": "open", "title": "Live merge feed", "brief": "Show the latest approved contributions as a live feed on the page.", "category": "code", "x": 8, "y": 30, "w": 30, "h": 20},
+  {"id": "x-banner", "status": "open", "title": "X banner, 1500 by 500", "brief": "A banner for the $OS X account built from the canvas. Paint its miniature here.", "category": "art", "x": 46, "y": 42, "w": 38, "h": 14},
+  {"id": "timelapse", "status": "open", "title": "Canvas timelapse", "brief": "A replay button that repaints the canvas plot by plot, in the order they were approved.", "category": "code", "x": 8, "y": 58, "w": 40, "h": 13},
+  {"id": "stickers", "status": "open", "title": "Sticker pack", "brief": "Six reaction stickers for replies on X, drawn in the canvas palette.", "category": "art", "x": 146, "y": 60, "w": 22, "h": 22},
+  {"id": "spanish", "status": "open", "title": "Spanish version", "brief": "Translate the page into Spanish with a language switch that remembers the choice.", "category": "words", "x": 172, "y": 60, "w": 22, "h": 12},
+  {"id": "pixel-sound", "status": "open", "title": "A sound for each pixel", "brief": "A short, quiet sound when a pixel is painted, with a mute switch that is easy to find.", "category": "code", "x": 172, "y": 75, "w": 22, "h": 8},
+  {"id": "leaderboard", "status": "open", "title": "Contributor leaderboard", "brief": "A ranking of contributors by plots painted and lore written, read from the live data.", "category": "code", "x": 146, "y": 86, "w": 48, "h": 13}
+]

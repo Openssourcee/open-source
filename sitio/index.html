@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Open Source ($OS) - the coin whose website is built by everyone</title>
+  <meta name="description" content="$OS is a memecoin whose website is open source. Anyone can paint a plot, write the lore or add a feature, free, right from the page.">
+  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121314" media="(prefers-color-scheme: dark)">
+  <meta property="og:title" content="Open Source ($OS)">
+  <meta property="og:description" content="The coin whose website is built by everyone. Free to contribute, no account needed.">
+  <meta property="og:image" content="og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Martian+Mono:wght@400;500;600&family=Jersey+10&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#how">Skip the canvas</a>
+
+  <header class="bar" data-built-by="genesis" data-version="v0.1">
+    <a class="pill brand" href="#top" aria-label="Open Source, back to the canvas">
+      <img src="favicon.png" alt="" width="22" height="22">
+      <span><span class="brand-name">Open Source</span> <span class="brand-ticker">$OS</span></span>
+    </a>
+    <div class="pill coords" aria-hidden="true"><span id="coords">(0, 0)</span><span class="coords-zoom" id="zoomLabel">1x</span></div>
+    <nav class="bar-actions" aria-label="Main">
+      <a class="pill pr-pill" id="prPill" hidden target="_blank" rel="noopener"></a>
+      <button class="pill blame-btn" id="blameBtn" type="button" aria-pressed="false">
+        <i class="ph-bold ph-git-commit" aria-hidden="true"></i><span>Who built this?</span>
+      </button>
+      <a class="pill icon-pill" id="xLink" hidden target="_blank" rel="noopener" aria-label="$OS on X"><i class="ph-bold ph-x-logo" aria-hidden="true"></i></a>
+      <a class="pill buy" id="buyTop" target="_blank" rel="noopener">Buy $OS</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="heroTitle" data-built-by="genesis" data-version="v0.1">
+      <div class="stage" id="stage">
+        <canvas id="world" tabindex="0" role="img" aria-label="The Open Source canvas: painted plots and open plots anyone can take. Use arrow keys to move and plus or minus to zoom."></canvas>
+
+        <div class="zoom" role="group" aria-label="Canvas view">
+          <button type="button" id="zoomIn" aria-label="Zoom in"><i class="ph-bold ph-plus" aria-hidden="true"></i></button>
+          <button type="button" id="zoomOut" aria-label="Zoom out"><i class="ph-bold ph-minus" aria-hidden="true"></i></button>
+          <button type="button" id="zoomHome" aria-label="Reset view"><i class="ph-bold ph-arrows-in-simple" aria-hidden="true"></i></button>
+          <button type="button" id="exploreBtn" aria-label="Explore full screen" aria-pressed="false"><i class="ph-bold ph-arrows-out-simple" aria-hidden="true"></i></button>
+        </div>
+
+        <div class="popover" id="popover" role="dialog" aria-modal="false" aria-labelledby="popTitle" hidden>
+          <button class="pop-close" type="button" id="popClose" aria-label="Close"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
+          <div class="pop-body" id="popBody"></div>
+        </div>
+
+        <div class="palette" id="palette" data-mode="idle">
+          <p class="palette-status" id="paletteStatus" aria-live="polite">Pick an open plot to paint, or make your own.</p>
+          <div class="swatches" id="swatches" role="radiogroup" aria-label="Paint colour"></div>
+          <div class="palette-actions">
+            <button class="chip-btn" type="button" id="eraserBtn" aria-pressed="false" hidden><i class="ph-bold ph-eraser" aria-hidden="true"></i><span>Eraser</span></button>
+            <button class="chip-btn" type="button" id="clearBtn" hidden>Clear</button>
+            <button class="chip-btn" type="button" id="cancelBtn" hidden>Cancel</button>
+            <button class="chip-btn" type="button" id="ownBtn"><i class="ph-bold ph-selection-plus" aria-hidden="true"></i><span>Make your own plot</span></button>
+            <button class="chip-btn go" type="button" id="sendBtn" hidden disabled>Send for review</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <h1 id="heroTitle">Built by whoever shows&nbsp;up.</h1>
+        <p class="lede">$OS is a coin with an open-source website. Paint a plot, write the lore or add a feature. Free, right here.</p>
+        <div class="ctas">
+          <button class="btn primary" type="button" data-contribute>Contribute</button>
+          <a class="btn quiet" href="#how">How it works</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="how" id="how" aria-labelledby="howTitle" data-built-by="genesis" data-version="v0.1">
+      <div class="wrap">
+        <h2 id="howTitle">Four moves, no account, no&nbsp;fee.</h2>
+        <ol class="branch" id="branch">
+          <li class="step">
+            <canvas class="step-art" data-state="open" width="160" height="100" aria-hidden="true"></canvas>
+            <h3>Pick a spot</h3>
+            <p>Take an open plot from the canvas, or drag out a plot of your own on any empty space.</p>
+          </li>
+          <li class="step">
+            <canvas class="step-art" data-state="claimed" width="160" height="100" aria-hidden="true"></canvas>
+            <h3>Make something</h3>
+            <p>Paint it pixel by pixel, write a chapter of the lore, or propose code and tech for the site.</p>
+          </li>
+          <li class="step">
+            <canvas class="step-art" data-state="review" width="160" height="100" aria-hidden="true"></canvas>
+            <h3>Send it</h3>
+            <p>Straight from this page. Your first one goes live at once; after that a person checks each one.</p>
+          </li>
+          <li class="step">
+            <canvas class="step-art" data-state="merged" width="160" height="100" aria-hidden="true"></canvas>
+            <h3>It goes live</h3>
+            <p>Your work joins the site with your name on it, for everyone who visits after you.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="plots" id="plots" aria-labelledby="plotsTitle" data-built-by="genesis" data-version="v0.1">
+      <div class="wrap">
+        <div class="plots-head">
+          <h2 id="plotsTitle">Open plots</h2>
+          <p class="note">Ideas to start from. Take one, or make your own plot anywhere on the canvas. Contributing is free and always will be.</p>
+        </div>
+        <div class="filters" role="group" aria-label="Filter plots by kind" id="filters"></div>
+        <ul class="plot-grid" id="plotGrid"></ul>
+        <p class="empty" id="plotsEmpty" hidden>Every plot of this kind is taken. Make your own on the canvas.</p>
+      </div>
+    </section>
+
+    <section class="lore" id="lore" aria-labelledby="loreTitle" data-built-by="genesis" data-version="v0.1">
+      <div class="wrap">
+        <h2 id="loreTitle">The lore</h2>
+        <p class="note">The story of $OS, written by anyone who shows up. Each approved chapter is added in order.</p>
+        <ol class="chapters" id="chapters"></ol>
+        <div class="lore-empty" id="loreEmpty" hidden>
+          <p>No chapters yet. The story of $OS is unwritten, and the first line could be yours.</p>
+        </div>
+        <button class="btn primary" type="button" data-contribute="story">Write a chapter</button>
+      </div>
+    </section>
+
+    <section class="people" id="people" aria-labelledby="peopleTitle" data-built-by="genesis" data-version="v0.1">
+      <div class="wrap people-grid">
+        <div>
+          <h2 id="peopleTitle">Built by</h2>
+          <ul class="faces" id="faces"></ul>
+        </div>
+        <div class="side">
+          <h2 class="h2-small">Accepted proposals</h2>
+          <ul class="proposals" id="proposals"></ul>
+          <p class="proposals-empty" id="proposalsEmpty">None yet. Code, tech and ideas sent from this page show up here once accepted.</p>
+          <h2 class="h2-small versions-title">Versions</h2>
+          <ol class="versions" id="versions"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="fees" id="fees" aria-labelledby="feesTitle" data-built-by="genesis" data-version="v0.1">
+      <div class="wrap">
+        <h2 id="feesTitle">Where the fees go</h2>
+        <p class="note">Contributing never costs anything, and the coin's creator fees go straight to open source.</p>
+        <ol class="flow">
+          <li class="flow-node">
+            <i class="ph-bold ph-coins" aria-hidden="true"></i>
+            <h3>Creator fees</h3>
+            <p>A small cut of every $OS trade.</p>
+          </li>
+          <li class="flow-node">
+            <i class="ph-bold ph-arrows-split" aria-hidden="true"></i>
+            <h3>Routed by pump.fun</h3>
+            <p>Set at launch to pay out through Donate.gg. The dev never holds them.</p>
+          </li>
+          <li class="flow-node">
+            <i class="ph-bold ph-hand-heart" aria-hidden="true"></i>
+            <h3>Open source</h3>
+            <ul class="charities" id="charities"></ul>
+          </li>
+        </ol>
+        <p class="fine">These charities have not endorsed $OS. Donate.gg handles the payouts, keeps a fee, and holds each donation until the charity collects it.</p>
+        <p class="tally" id="tally"></p>
+
+        <div class="nokeys" id="devkey">
+          <h3 id="devkeyTitle">The dev key goes here. It will control nothing.</h3>
+          <p>The other $OS posted its key and hoped. This one posts it after giving away everything it could touch: the fees are locked to the charities above, the dev wallet holds no $OS and no SOL, and no new $OS can ever be minted.</p>
+          <dl class="keybox">
+            <div class="keyrow">
+              <dt>Dev wallet</dt>
+              <dd><code id="devAddr">Posted at launch</code><a class="btn quiet" id="devScan" target="_blank" rel="noopener" hidden>Check it on Solscan</a></dd>
+            </div>
+            <div class="keyrow">
+              <dt>Private key</dt>
+              <dd><code id="devKey">Posted at launch</code><button class="btn quiet" type="button" id="copyKey" hidden>Copy</button></dd>
+            </div>
+          </dl>
+          <p class="keywarn"><i class="ph-bold ph-warning" aria-hidden="true"></i>Don't send anything to this wallet. Bots empty it in seconds and nobody can give it back.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="join" id="join" aria-labelledby="joinTitle" data-built-by="genesis" data-version="v0.1">
+      <div class="wrap join-inner">
+        <div class="join-plot">
+          <span class="tag"><i></i>open plot</span>
+          <h2 id="joinTitle">Your pixels go&nbsp;here.</h2>
+          <div class="join-actions">
+            <button class="btn primary" type="button" data-contribute>Contribute</button>
+            <a class="btn quiet" id="repoLink" target="_blank" rel="noopener"><i class="ph-bold ph-github-logo" aria-hidden="true"></i><span>Source on GitHub</span></a>
+          </div>
+        </div>
+        <div class="ca">
+          <span class="ca-label">Contract</span>
+          <code id="caText">Published at launch</code>
+          <button class="pill copy" id="copyCa" type="button" disabled>
+            <span class="copy-idle"><i class="ph-bold ph-copy" aria-hidden="true"></i> Copy</span>
+            <span class="copy-done" aria-hidden="true"><i class="ph-bold ph-check" aria-hidden="true"></i> Copied</span>
+          </button>
+          <a class="pill buy" id="buyBottom" target="_blank" rel="noopener">Buy $OS</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot" data-built-by="genesis" data-version="v0.1">
+    <p>$OS is a memecoin. No roadmap promises, no expectation of profit: just a canvas and the people who paint it.</p>
+    <p>Site code under the MIT licence. Fork it, improve it, send it back.</p>
+  </footer>
+
+  <dialog class="sheet" id="contribute" aria-labelledby="cTitle">
+    <form id="cForm" novalidate>
+      <div class="sheet-head">
+        <h2 id="cTitle">Contribute</h2>
+        <button class="pop-close" type="button" id="cClose" aria-label="Close"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
+      </div>
+
+      <fieldset class="kinds" id="kinds">
+        <legend class="sr-only">What are you adding?</legend>
+        <label class="kind-opt"><input type="radio" name="kind" value="paint"><i class="ph-bold ph-paint-brush-broad" aria-hidden="true"></i><b>Paint</b><span>A plot of pixel art on the canvas</span></label>
+        <label class="kind-opt"><input type="radio" name="kind" value="story"><i class="ph-bold ph-book-open-text" aria-hidden="true"></i><b>Lore</b><span>A chapter of the $OS story</span></label>
+        <label class="kind-opt"><input type="radio" name="kind" value="code"><i class="ph-bold ph-code" aria-hidden="true"></i><b>Code &amp; tech</b><span>A feature, a fix, a tool</span></label>
+        <label class="kind-opt"><input type="radio" name="kind" value="idea"><i class="ph-bold ph-lightbulb" aria-hidden="true"></i><b>Idea</b><span>Anything the site should have</span></label>
+      </fieldset>
+
+      <div class="paint-intro" id="paintIntro" hidden>
+        <p>Painting happens on the canvas itself. Pick an open art plot, or drag out your own plot on any empty space, then paint it tile by tile.</p>
+        <button class="btn primary" type="button" id="goPaint">Choose a spot</button>
+      </div>
+
+      <div class="paint-preview" id="paintPreview" hidden>
+        <canvas id="previewCanvas" aria-label="Preview of your painting"></canvas>
+        <p id="previewInfo"></p>
+      </div>
+
+      <div class="fields" id="fields" hidden>
+        <div class="field">
+          <label for="fHandle">Your name or @handle <span class="opt">optional</span></label>
+          <input id="fHandle" name="handle" maxlength="30" autocomplete="nickname" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="fTitle">Title</label>
+          <input id="fTitle" name="title" maxlength="80">
+        </div>
+        <div class="field" id="bodyField">
+          <label for="fBody" id="bodyLabel">Your chapter</label>
+          <textarea id="fBody" name="body" rows="7"></textarea>
+          <p class="help" id="bodyHelp"></p>
+        </div>
+        <div class="field" id="linkField">
+          <label for="fLink">Link <span class="opt">optional</span></label>
+          <input id="fLink" name="link" type="url" inputmode="url" placeholder="https://" spellcheck="false">
+          <p class="help">A gist, a repo, a demo. Must start with https://</p>
+        </div>
+        <div class="field" id="plotField">
+          <label for="fPlot">About one of the open plots <span class="opt">optional</span></label>
+          <select id="fPlot" name="plotId"><option value="">No, it is about the whole site</option></select>
+        </div>
+      </div>
+
+      <p class="form-error" id="formError" role="alert" hidden></p>
+
+      <div class="sheet-foot" id="sheetFoot" hidden>
+        <p id="footNote">Your first contribution goes live straight away. After that, and for code or links, a person checks it first.</p>
+        <button class="btn primary" type="submit" id="cSubmit">Send for review</button>
+      </div>
+    </form>
+
+    <div class="sent" id="sent" hidden>
+      <i class="ph-bold ph-check-circle" aria-hidden="true"></i>
+      <h2>Sent.</h2>
+      <p id="sentText">It goes live as soon as it is checked. Thanks for building.</p>
+      <button class="btn quiet" type="button" id="sentClose">Back to the site</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <noscript><p class="noscript">The canvas needs JavaScript. Everything else is in the repo as plain files.</p></noscript>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
